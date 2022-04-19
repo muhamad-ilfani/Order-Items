@@ -7,5 +7,6 @@ type Item struct {
 	Item_code   string `json:"item_code" gorm:"primaryKey"`
 	Description string `json:"description"`
 	Quantity    int64  `json:"quantity"`
+	Order_id    uint   `json:"order_id"`
 	ID_ref      uint
 }

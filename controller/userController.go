@@ -54,18 +54,26 @@ func (idb *OrderDatas) UpdateOrder(ctx *gin.Context) {
 	var Data model.Order
 
 	orderID, _ := strconv.Atoi(ID)
-
+	if err := idb.DB.Preload("Item_user").Where(&model.Order{Order_id: uint(orderID)}).Find(&Data).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"massage": "can't find data",
+		})
+		return
+	}
 	if err := ctx.ShouldBindJSON(&newData); err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
 	}
 
-	if err := idb.DB.Model(&Data.Item_user).Where("order_id=?", orderID).Updates(&newData.Item_user).Error; err != nil {
-		ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"massage": "failed to update item",
-			"error":   err.Error(),
-		})
-		return
+	for i, d := range newData.Item_user {
+		if err := idb.DB.Model(&Data.Item_user[i]).Updates(&d).Error; err != nil {
+			ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"massage": fmt.Sprintf("failed to update item %d", i),
+				"error":   err.Error(),
+			})
+			return
+		}
 	}
+
 	if err := idb.DB.Model(&Data).Where("order_id=?", orderID).Updates(&newData).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"massage": "failed to update order",
@@ -73,26 +81,32 @@ func (idb *OrderDatas) UpdateOrder(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{
-		"order": newData,
+		"order": Data,
 	})
 }
 
 func (idb *OrderDatas) DeleteOrder(ctx *gin.Context) {
 	ID := ctx.Param("id")
-	orderID, _ := strconv.Atoi(ID)
 	var Data model.Order
+	orderID, _ := strconv.Atoi(ID)
 
+	if err := idb.DB.Preload("Item_user").Where(&model.Order{Order_id: uint(orderID)}).Find(&Data).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"massage": "can't find data",
+		})
+		return
+	}
 	if err := ctx.ShouldBindJSON(&Data); err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	if err := idb.DB.Model(&Data).Where("order_id=?", orderID).Delete(Data).Error; err != nil {
+	if err := idb.DB.Delete(&Data).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"massage": "failed to delete data",
 		})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": fmt.Sprintf("car %v successfully deleted", orderID),
+		"message": fmt.Sprintf("Order %v successfully deleted", orderID),
 	})
 }
