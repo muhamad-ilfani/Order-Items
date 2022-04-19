@@ -65,6 +65,11 @@ func (idb *OrderDatas) UpdateOrder(ctx *gin.Context) {
 	}
 
 	for i, d := range newData.Item_user {
+		if i >= len(Data.Item_user)-1 {
+			Data.Item_user = append(Data.Item_user, model.Item{})
+			fmt.Println(len(Data.Item_user))
+			fmt.Println(len(newData.Item_user))
+		}
 		if err := idb.DB.Model(&Data.Item_user[i]).Updates(&d).Error; err != nil {
 			ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
 				"massage": fmt.Sprintf("failed to update item %d", i),
@@ -72,6 +77,7 @@ func (idb *OrderDatas) UpdateOrder(ctx *gin.Context) {
 			})
 			return
 		}
+
 	}
 
 	if err := idb.DB.Model(&Data).Where("order_id=?", orderID).Updates(&newData).Error; err != nil {

@@ -9,9 +9,9 @@ import (
 func StartServer(db *controller.OrderDatas) *gin.Engine {
 	router := gin.Default()
 
-	router.POST("/user", db.CreateOrder)
-	router.GET("/user", db.GetOrder)
-	router.PUT("/user/:id", db.UpdateOrder)
-	router.DELETE("/user/:id", db.DeleteOrder)
+	router.POST("/orders", db.CreateOrder)
+	router.GET("/orders", db.GetOrder)
+	router.PUT("/orders/:id", db.UpdateOrder)
+	router.DELETE("/orders/:id", db.DeleteOrder)
 	return router
 }
