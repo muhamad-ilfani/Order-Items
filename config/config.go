@@ -25,6 +25,8 @@ func InitDB() *gorm.DB {
 		panic("Failed to connect to database")
 	}
 	fmt.Println("database successfully connected")
+	//if db == nil{
 	db.AutoMigrate(&model.Order{}, &model.Item{})
+	//}
 	return db
 }
